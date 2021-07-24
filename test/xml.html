@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<style type="text/css">
+
+    * {
+        padding: 0;
+    }
+
+    html, body, div {
+        margin: 0;
+    }
+
+    div, div.demo {
+        border: 0px solid red;
+    }
+
+    div, div.xxxx {
+        border: 0px solid red;
+    }
+
+    div.xxxx {
+        border: 0px solid red;
+    }
+
+    div.xxxx.as {
+        border: 0px solid red;
+    }
+
+    div:hover {
+        color: red;
+    }
+
+    button[type="button"] {
+        width: 100px;
+    }
+
+    button[type^="but"] {
+        height: 30px;
+    }
+
+
+    p:first-of-type {
+        background: #fff;
+    }
+
+    div[lang="en"]:host > div.a.b .c + p ~ img > span[type="as"]:hover {
+        font-size: 14px;
+    }
+
+    div[lang="en"]:host > div.a.b .c + p ~ img > span[type="as"]:hover {
+        font-size: 14px;
+    }
+
+    div div p span a {
+        font-size: 12px;
+    }
+
+    div.line,
+    p.line2,
+    img {
+        font-size: 14px;
+    }
+
+    div.line,
+    p.line2,
+    img {
+        font-size: 14px;
+    }
+
+    div.line,
+    p.line2,
+    img {
+        font-size: 14px;
+    }
+
+
+    @media screen and (max-width: 300px) {
+        body {
+            background-color: lightblue;
+        }
+
+        #demo {
+            width: 222px;
+        }
+    }
+
+
+</style>
+<div class=" demo " id="x">
+    <div class="same dk" id="kx">11
+        <img src="{{src}}"/>
+        <p><span class="demo2"></span></p>
+        <div>3</div>
+    </div>
+    <div class=" same s7 tr">
+        <h5 class="demo3">1</h5>
+    </div>
+    <div>
+        <div class="same">
+            <p class="m2">
+                <span class="same">5</span>
+            </p>
+        </div>
+    </div>
+</div>
+<script>
+    {
+        var regExp = /<([^>\s]+)([^>]*)(\/?)>/g; // 解析节点
+        var regExpReplace = /{{[^{}]*}}/g; // 替换&gt;&lt;
+        var regExpClass = /class\s*=\s*["']?([^"']+)/; // className
+        var regExpId = /id\s*=\s*["']?([^"']+)/; // id
+        var regExpBr = /[\r\n]/g; // 换行
+        var regExpRepeatSpace = /\s{2,}/g;
+        var regExpCutToken = /[#.+>~\s:]*[^#.+>~:\s\[\]]+|\[[^\[\]]+\]/g || /[#.+>~]?[^#.+>~\[\]]+|\[[^\[\]]+\]/g; //todo 有意思
+        var regExpCssSelectorSplit = /([^{}\n]+){([^{}]+)}/g;
+        var regExpCssStart = /\S([\s\S]+)\S/;
+        var regExpEmpty = /\s+([>+~])\s+/g;
+        var regExpIsTag = /^[^#.+>~]+$/;
+        var regExpComment = /<!--[\s\S]+?-->/g;
+        var regExpIsPercent = /^\d+%$/;
+
+
+        var str = document.querySelector('.demo').outerHTML;
+        var str1 = str.replace(/[\r\n]+/g, '');
+
+        var style = document.querySelector('style').innerHTML;
+
+        var closeList = ['img'];
+
+        var ignoreList = ['*', 'html', 'body', 'page', 'from', 'to'];
+
+
+        console.log(str);
+        console.log(style)
+
+        var tree;
+
+        class parser {
+
+            constructor(opt) {
+                this.cache = {}
+            }
+
+            transformHtml(str) {
+                let result;
+                let tree = {
+                    tagName: 'root',
+                    parent: null,
+                    children: []
+                };
+                let deep = 0;
+                let cur = tree;
+                let tagName;
+                let count = 1;
+                let nodeMap = {};
+                let classNameMap = {};
+                let idMap = {};
+                let tagMap = {};
+
+                str = str.replace(regExpReplace, '');
+                str = str.replace(regExpComment, '');
+
+                while ((result = regExp.exec(str)) !== null) {
+                    tagName = result[1];
+                    if (tagName) {
+                        if (tagName.charAt(0) === '/') {
+                            deep--;
+                            cur = cur.parent;
+                        } else {
+                            let attr = result[2].trim();
+
+                            let isClose = result[3] === '/' || closeList.includes(tagName);
+                            !isClose && deep++;
+
+                            let parent = cur;
+                            let tempKey = `key${count++}`;
+                            let id;
+                            let className;
+                            if (attr) {
+                                id = attr.match(regExpId);
+                                id = id && id[1].trim() || null;
+                                className = attr.match(regExpClass);
+                                className = className && className[1].trim() || null;
+                            }
+
+                            cur = {
+                                parent,
+                                children: [],
+                                tagName,
+                                id,
+                                className,
+                                attributes: [],
+                                selector: [],
+                                key: tempKey,
+                                position: result.index
+                            };
+                            parent.children.push(cur);
+                            nodeMap[tempKey] = cur;
+
+                            tagMap[tagName] ? tagMap[tagName].push(tempKey) : tagMap[tagName] = [tempKey];
+
+                            if (className) {
+                                let temp = className.split('\u0020');
+                                for (let v of temp) {
+                                    classNameMap[v] ? classNameMap[v].push(tempKey) : classNameMap[v] = [tempKey];
+                                }
+                            }
+                            if (id) {
+                                idMap[id] ? idMap[id].push(tempKey) : idMap[id] = [tempKey];
+                            }
+
+                            if (isClose) {
+                                cur = parent;
+                            }
+
+                        }
+                    }
+
+                }
+                return {
+                    tree,
+                    nodeMap,
+                    tagMap,
+                    idMap,
+                    classNameMap,
+                    deep
+                }
+
+            }
+
+            transformCss(str) {
+                let result;
+                let selectors = [];
+                while ((result = regExpCssSelectorSplit.exec(str)) !== null) {
+                    //console.log(result, ":::::::::result");
+                    let tStart = result.index;
+                    let tEnd = result.index + result[0].length;
+
+                    let selector = result[1].replace(regExpBr, '').trim();
+
+                    let tempMatch = result[1].match(regExpCssStart);
+                    let tempOffset = tempMatch && tempMatch.index || 0;
+
+                    let sStart = result.index + tempOffset;
+                    let sEnd = sStart + (tempMatch && tempMatch[0].length || 0);
+
+                    selectors.push({
+                        selector,
+                        tStart,
+                        tEnd,
+                        sStart,
+                        sEnd
+                    })
+                }
+                let list = [];
+                for (let v of selectors) {
+                    const {selector, tStart, tEnd, sStart, sEnd} = v;
+                    let tempList = selector.split(',');
+                    let count = 0;
+                    let delStart = sStart;
+                    for (let v of tempList) {
+                        count += v.length + 1;
+
+                        let tempStr = v.trim().replace(regExpRepeatSpace, '\u0020').replace(regExpEmpty, '$1');
+                        let selector = tempStr.match(regExpCutToken);
+
+                        let tempCount = sStart + count - 1;
+                        let tempStart = sStart + (count - v.length - 1);
+                        let line = this.findLineNo(str, tempStart);
+                        !regExpIsPercent.test(v.trim()) && list.push(selector.map(v => ({
+                            selector: v, // 子子级选择器，
+                            tStart, // 整条css 样式起始位
+                            tEnd, // 整条css 样式截止位
+                            sStart, // 整个选择器开始位
+                            sEnd, // 整个选择器结束位
+                            start: tempStart,// 子选择器开始位
+                            end: tempCount, // 子选择器截止位
+                            delStart, // 子选择器删除起始位，包含选择器前逗号
+                            delEnd: tempCount, // 子选择器删除截止位
+                            line
+                        })));
+                        delStart = tempCount
+                    }
+                }
+                return list;
+            }
+
+            check(html, css, js) {
+                let {tree, nodeMap, idMap, classNameMap, tagMap, deep} = this.transformHtml(html);
+                let selectors = this.transformCss(css);
+
+                let result = this.checkSelector(selectors, tree, nodeMap, idMap, classNameMap, tagMap);
+                console.log(result, 'result::');
+
+                console.log('tree::', tree, '\r\nnodeMap::', nodeMap, '\r\ndeep::', deep, '\r\nselectors::', selectors, '\r\nidMap::', idMap, '\r\nclassNameMap::', classNameMap, '\r\ntag::', tagMap);
+            }
+
+            isHasSelector(map, selector) {
+                debugger
+                selector = selector.trim();
+                let letter = selector.charAt(0);
+                let key = letter === '#' ? 'idMap' : letter === '.' ? 'classNameMap' : 'tagMap';
+                let tempSelector = regExpIsTag.test(selector) ? selector : selector.slice(1);
+
+                return Object.keys(map[key]).includes(tempSelector.trim());
+            }
+
+            checkSelector(selectors, tree, nodeMap, idMap, classNameMap, tagMap) {
+                let result = [];
+                debugger
+
+                for (let v of selectors) {
+
+                    for (let i = 0, len = v.length; i < len; i++) {
+                        let item = v[i];
+                        let {selector} = item;
+                        let relationalSymbols = selector.charAt(0);
+
+                        if (ignoreList.includes(selector.trim()) || relationalSymbols === ':') { // 过滤白名单 伪类
+                            continue;
+                        }
+                        if (!this.isHasSelector({idMap, classNameMap, tagMap}, selector)) {
+                            result.push(item);
+                            break
+                        } else if (relationalSymbols === '#') {
+
+                            // todo check
+
+                        } else if (relationalSymbols === '.') {
+
+                            // todo check
+
+                        } else if (relationalSymbols === '+') {
+
+                            // todo check
+
+                        } else if (relationalSymbols === '~') {
+
+                            // todo check
+
+                        } else if (relationalSymbols === '>') {
+
+                            // todo check
+
+                        }
+
+                    }
+
+
+                }
+
+                return result
+            }
+
+            cut(str) {
+                return str.match(regExpCutToken) || [];
+            }
+
+            findLineNo(str, end) {
+                return str.slice(0, end).split('\n').length;
+            }
+
+        }
+
+        var p = new parser();
+        //p.transformHtml(str1, tree);
+        //p.transformHtml2(str1);
+        //p.transformCss(style);
+        p.check(str1, style);
+        //p.cut('div[lang="en"]::host>div.a.b+p~img>span[type="as"]:hover')
+        //var tt = p.cut2('div[lang="en"]::host>div.a.b+p~img>span[type="as"]:hover');
+        //console.log(tt)
+
+
+    }
+</script>
+</body>
+</html>

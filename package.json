@@ -1,0 +1,23 @@
+{
+  "name": "js-xml-css-parser",
+  "version": "1.0.0",
+  "description": "xml css parser",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx tsc -w"
+  },
+  "keywords": [
+    "xml",
+    "css",
+    "parser"
+  ],
+  "author": "yyccmmkk",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^4.3.5"
+  }
+}

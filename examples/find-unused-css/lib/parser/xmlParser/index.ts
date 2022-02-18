@@ -77,12 +77,12 @@ export default function xmlParser(str: string) {
 
   }
   return {
-    tree,
-    nodeMap,
-    tagMap,
-    idMap,
-    classNameMap,
-    deep
+    tree, // 虚拟 DOM tree
+    nodeMap, // key和虚拟节点映射 key1: {}
+    tagMap, // tagName和key映射 div:[key1,key2,...]
+    idMap, // id 和key 映射
+    classNameMap, // class 和 key 映射
+    deep // 如果不是0 则表明解析节点发生了错误
   }
 
 }

@@ -11,9 +11,10 @@ class FindUnusedCss {
     let selectors = cssParser(css);
 
     let result = this.checkSelector(selectors, tree, nodeMap, idMap, classNameMap, tagMap);
-    console.log(result, 'result::');
+    console.log('result::无效的CSS选择器为\n',JSON.stringify(result),'\n',result);
 
-    console.log('tree::', tree, '\r\nnodeMap::', nodeMap, '\r\ndeep::', deep, '\r\nselectors::', selectors, '\r\nidMap::', idMap, '\r\nclassNameMap::', classNameMap, '\r\ntag::', tagMap);
+    console.log('DOM tree::', tree, '\r\nnodeMap::', nodeMap, '\r\ndeep::', deep, '\r\nselectors::', selectors, '\r\nidMap::', idMap, '\r\nclassNameMap::', classNameMap, '\r\ntag::', tagMap);
+    return result;
   }
 
   isHasSelector(map:any, selector:string) {
@@ -181,4 +182,5 @@ let css = `<style type="text/css">
 
 </style>`
 
-_instance.check(html,css)
+let result = _instance.check(html,css);
+document.querySelector('#result')!.innerHTML=JSON.stringify(result);

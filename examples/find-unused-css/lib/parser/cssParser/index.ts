@@ -44,7 +44,7 @@ export default function cssParser(str: string): Selector[][] {
       let tempStart = sStart + (count - v.length - 1);
       let line = findLineNo(str, tempStart);
       !regExpIsPercent.test(v.trim()) && list.push(selector.map(v => ({
-        selector: v, // 子子级选择器，
+        selector: v, // 子级选择器，
         tStart, // 整条css 样式起始位
         tEnd, // 整条css 样式截止位
         sStart, // 整个选择器开始位

@@ -10,6 +10,7 @@
   "author": "yyccmmkk",
   "license": "ISC",
   "devDependencies": {
+    "typescript": "^4.5.5",
     "ts-loader": "^9.2.3",
     "webpack": "^5.38.1",
     "webpack-dev-server": "^3.11.2",

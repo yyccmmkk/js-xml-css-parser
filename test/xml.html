@@ -356,11 +356,6 @@
 
                 return result
             }
-
-            cut(str) {
-                return str.match(regExpCutToken) || [];
-            }
-
             findLineNo(str, end) {
                 return str.slice(0, end).split('\n').length;
             }
@@ -368,13 +363,9 @@
         }
 
         var p = new parser();
-        //p.transformHtml(str1, tree);
-        //p.transformHtml2(str1);
-        //p.transformCss(style);
+
         p.check(str1, style);
-        //p.cut('div[lang="en"]::host>div.a.b+p~img>span[type="as"]:hover')
-        //var tt = p.cut2('div[lang="en"]::host>div.a.b+p~img>span[type="as"]:hover');
-        //console.log(tt)
+
 
 
     }
